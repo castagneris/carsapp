@@ -10,8 +10,6 @@
     		<td style="color:#DF3A01"> Respuesta </td>
 		<td> {{getText}}</td>
 	</table>
-	
-	<a href="http://localhost:4567/ListUser" style="color:#DF3A01"> <h3>Volver </h3> </a> 
 	</body>
 
 </html>

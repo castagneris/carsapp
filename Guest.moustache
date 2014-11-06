@@ -1,0 +1,31 @@
+<html>
+	<head > 
+		<title> Users </title>
+	</head>
+	<body>
+	<a href="http://localhost:4567/app"><img src="http://localhost:4567/ButtonHome.png" width="45" height="45" style="float:right"/></a>
+	
+	<p style="color:#DF3A01" style="float:right">Invitado</p>	
+
+	<table align="center" border="1">
+		<tr>
+				<td>
+					 <img src="http://localhost:4567/ButtonList.png"/> </br>
+					
+					<a href="http://localhost:4567/ListUser" style="color:#B40404" > <img src="http://localhost:4567/ButtonUser2.png"/> </a> </br>
+
+					<a href="http://localhost:4567/ListVehicles" style="color:#B40404" > <img src="http://localhost:4567/ButtonVehicle2.png"/> </a> </br>
+
+					<a href="http://localhost:4567/ListPost" style="color:#B40404" > <img src="http://localhost:4567/ButtonPost2.png"/> </a> </br>
+				</td>
+			</tr>	
+			<tr>
+				<td>
+					<a href="http://localhost:4567/Search/User"> <img src="http://localhost:4567/ButtonSearch.png"/> </a> </br>
+				</td>
+			</tr>
+		</table>
+
+	</body>
+
+</html>

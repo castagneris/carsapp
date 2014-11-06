@@ -1,0 +1,108 @@
+  
+<html>
+	<head > 
+		<title> NewMotorcycle </title>
+	</head>
+	
+	<body link="#4000FF">
+	<body alink="#4000FF">
+	<body vlink="#4000FF">
+		
+		<form action="/app/{{u}}/motorcycle" method="post">
+		
+		<table align="right">
+			<td>
+				<a href="http://localhost:4567/app"><img src="http://localhost:4567/ButtonHome.png" width="45" height="45"/></a>
+			</td>
+		</table>
+		
+		<h1 style="color:#DF3A01" align="center"> Cargar Moto </h1> </br>
+		<table align="center"> 
+		
+			<tr>
+				<td  style="color:#DF3A01">
+				Modelo</br>
+				<input type=text SIZE=25 NAME=model> 
+				</td>
+			</tr>
+			<tr>
+				<td  style="color:#DF3A01">
+				Patente </br>
+				<input type=text SIZE=25 NAME=patent> 
+				</td>
+			</tr>
+			<tr>
+				<td  style="color:#DF3A01">
+	    			Color </br>
+	    			<input type=text SIZE=25 NAME=color> 
+				</td>
+			</tr>
+			<tr>
+				<td  style="color:#DF3A01">
+	    			Kilometros </br>
+	    			<input type=text SIZE=25 NAME=km> 
+				</td>
+			</tr>
+			<tr>
+				<td  style="color:#DF3A01">
+	    			Marca </br>
+	    			<input type=text SIZE=25 NAME=mark> 
+				</td>
+			</tr>
+			<tr>
+				<td  style="color:#DF3A01">
+				Año </br>
+				<input type=text SIZE=25 NAME=year> 
+				</td>
+			</tr>
+			<tr>
+				<td  style="color:#DF3A01">
+	    			Tipo de Moto </br> 
+					<select input name=type>  
+						<option value="Street">Street</option>
+						<option value="Chopper">Chopper</option>    
+						<option value="Standard">Standard</option>
+						<option value="Sport">Sport</option>
+						<option value="Touring">Touring</option>
+						<option value="Scooter">Scooter</option>
+					</select> 
+				</td>
+			</tr>
+			<tr>
+				<td  style="color:#DF3A01">
+	    			Tipo de Motor</br>
+	    			<input type=text SIZE=25 NAME=type_motor>
+				</td>
+			</tr>
+			<tr>
+				<td  style="color:#DF3A01">
+	    			Sistema de arranque </br> 
+					<select input name=boot_system>  
+						<option value="Pedal">Pedal</option>
+						<option value="Electrico">Electrico</option>    
+						<option value="Pedal y Electrico">Pedal y Electrico</option>
+					</select> 
+				</td>
+			</tr>
+			<tr>
+				<td  style="color:#DF3A01">
+	    			Cilindrada moto</br>
+	    			<input type=text SIZE=25 NAME=displacement>
+				</td>
+			</tr>
+		
+		</table>
+		  
+		<table align="center">
+			<td valign=top></td>
+			<td>
+				<input type=reset value=Borrar_Informacion>
+				<input type=submit value= Enviar>
+			</td>
+		</table>
+		</form>
+		
+		<table align="center"><td><a href="http://localhost:4567/app/{{u}}"> <h3 style="color:#DF3A01">Volver </h3> </a></td></table>
+	
+	</body>
+</html>
