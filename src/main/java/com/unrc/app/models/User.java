@@ -12,7 +12,7 @@ import org.javalite.activejdbc.Model;
 public class User extends Model {
 
 	static {
-      validatePresenceOf("first_name", "last_name","email","pass");
+      validatePresenceOf("first_name", "last_name","email","pass", "admin");
   	}
 
 	@Override
@@ -54,6 +54,15 @@ public class User extends Model {
 		return (this.getString("email"));
 	}
 	
+        //get pass
+        public String getPass(){
+            return (this.getString("pass"));
+        }    
+        //get admin
+        public Boolean getAdmin(){
+            return (this.getBoolean("admin"));
+       
+        }
 	//find user
 	public User findUser (String email){
 		return User.findFirst("email = ?",email);

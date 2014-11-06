@@ -1,5 +1,6 @@
 package com.unrc.app;
 
+import spark.Session;
 import com.unrc.app.models.*;
 import java.util.*;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
@@ -43,12 +44,11 @@ public class App {
         });     
    
       
-		get ("/app", (request, response) -> {
-			Map<String, Object> attributes = new HashMap<>();
-			return new ModelAndView(attributes, "Main.moustache");
-
-			 },
-            new MustacheTemplateEngine()
+	get ("/app", (request, response) -> {
+        	Map<String, Object> attributes = new HashMap<>();
+                return new ModelAndView(attributes, "Main.moustache");
+                },
+                 new MustacheTemplateEngine()
         );
 		
 		get ("/InsertVehicle", (request, response) -> {
@@ -70,7 +70,56 @@ public class App {
         );
 
 
-	
+	get("/Login", (request, response) -> {
+         // Map<String, Object> attributes = new HashMap<>();
+          Session session = request.session(false);
+          return new ModelAndView(null, "Login.moustache");
+      },
+      new MustacheTemplateEngine()
+  );
+ 
+   
+  
+         post("/CheckLogin", (request, response) -> {
+            String retornar;
+			retornar=" <body>";           
+	    User u = User.findFirst("email=?",request.queryParams("email"));         
+	    String pass =request.queryParams("pass");
+            
+            if (u !=null ){
+	    if (u.getPass().compareTo(pass) == 0) {
+                Session session = request.session(true);
+                session.attribute("user_email", u.getEmail());
+                session.attribute("user_id", u.id());
+                if (u.getAdmin()) {
+                      response.redirect("/app/"+u.id());
+                }
+                else {
+                    response.redirect("/app/"+u.getId());
+                }
+            }
+            else{
+                response.redirect("/Login");
+            }
+            
+            }
+            else {
+                retornar = retornar + "Usuario no existente";
+                retornar = retornar +"<a href="+"http://localhost:4567/Login"+"><h3 style="+"color:#DF3A01"+"> Volver </h3></a>";
+            }         
+	         
+	 return retornar;
+        });
+         
+      get("/Logout", (request, response) -> {
+            Session session = request.session(false);
+            if (session!=null) {
+                session.invalidate();
+            }
+            response.redirect("/app");
+            return null;
+        });
+         
 
 
 //------------------------------------------Listar----------------------------  
