@@ -16,7 +16,7 @@
 			<td colspan="2">{{getText}}</td>
 		</tr>
 		<tr>
-			<td > <a href="questions/{{id}}/newAnswer" style="color:#DF3A01"> Responder </a></td>
+			<td> <a href="questions/{{getId}}" style="color:#DF3A01"> Responder </a></td>
 							
 			<td> <a href="questions/{{id}}/answerInd" style="color:#DF3A01"> Respuestas </a></td>
 
@@ -24,8 +24,6 @@
 	{{/QuestionPosts}}
 			
 	</table>
-
-	<a href="http://localhost:4567/ListUser" style="color:#DF3A01"> <h3>Volver </h3> </a> 
 	</body>
 
 </html>

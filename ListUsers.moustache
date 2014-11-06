@@ -2,6 +2,9 @@
 	<head > 
 		<title> List Users </title>
 	</head>
+	<body link="#4000FF">
+	<body alink="#4000FF">
+	<body vlink="#4000FF">
 	<body>
 	<a href="http://localhost:4567/app"><img src="http://localhost:4567/ButtonHome.png" width="45" height="45" style="float:right"/></a>
 	<h1 style="color:#DF3A01">Lista de Usuarios</h1>
@@ -13,16 +16,33 @@
 				<th style="color:#DF3A01"> Nombre </th>
 				<th style="color:#DF3A01"> Apellido </th>	
 				<th style="color:#DF3A01"> E-mail </th>
+				{{#admin}}
+				<th style="color:#DF3A01"> Permiso </th>
+				{{/admin}}			
 			</tr>
-			{{#users}}
-			<tr>
-				<td> <a href="ListUser/{{id}}" style="color:#DF3A01">{{getFirstName}} </a></td>
-				<td> {{getLastName}} </td>	 
-				<td>{{getEmail}}</td></br>
-			</tr>
-			{{/users}}
+			{{#admin}}
+				{{#users}}
+				<tr>
+					<td> <a href="app/{{id}}" style="color:#DF3A01">{{getFirstName}} </a></td>
+					<td> {{getLastName}} </td>	 
+					<td>{{getEmail}}</td>	
+					<td><a href="http://localhost:4567/app/{{id}}/darAdmin"> DarAdmin</a> </td>				
+					</br>
+				</tr>
+				{{/users}}
+			{{/admin}}
+			{{^admin}}
+				{{#users}}
+				<tr>
+					<td> {{getFirstName}}</td>
+					<td> {{getLastName}} </td>	 
+					<td>{{getEmail}}</td></br>
+
+				</tr>
+				{{/users}}
+			{{/admin}}
 	</table>
-	<a href="http://localhost:4567/List" style="color:#DF3A01" align="right"> <h3>Volver </h3> </a> 
+
 	</body>
 
 </html>

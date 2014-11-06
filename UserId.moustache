@@ -2,7 +2,11 @@
 	<head > 
 		<title> Users </title>
 	</head>
+	<body alink="#4000FF">
+	<body link="#4000FF">
+	<body vlink="#4000FF">
 	<body>
+	<a href="http://localhost:4567/Logout" style="float:left"> <p style="color:#DF3A01"> Cerrar Sesion </p></a>
 	<a href="http://localhost:4567/app"><img src="http://localhost:4567/ButtonHome.png" width="45" height="45" style="float:right"/></a>
 	
 	{{#user}}
@@ -11,12 +15,22 @@
 	<table align="center" border="1">
 		<tr>
 			<td>
-				<a href="{{id}}/posts"> <img src="http://localhost:4567/ButtonPost.png"/> </a>
+				<a href="http://localhost:4567/ListUser"> <img src="http://localhost:4567/ButtonListUsers.png"/> </a>
 			</td>
 		</tr>	
 		<tr>
 			<td>
-				<a href="{{id}}/delete"> <img src="http://localhost:4567/ButtonDelete.png"/> </a>
+				<a href="http://localhost:4567/ListPost"> <img src="http://localhost:4567/ButtonListPost.png"/> </a>
+			</td>
+		</tr>	
+		<tr>
+			<td>
+				<a href="{{id}}/posts"> <img src="http://localhost:4567/ButtonPost.png"/> </a>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<a href="{{id}}/newPost"> <img src="http://localhost:4567/ButtonNewPost.png"/> </a>
 			</td>
 		</tr>
 		<tr>
@@ -32,8 +46,17 @@
 				<a href="{{id}}/newTruck"><img src="http://localhost:4567/ButtonTruck.png"/></a>
 			</td>
 		</tr>
+		<tr>
+			<td>
+				<a href="http://localhost:4567/Search/User"> <img src="http://localhost:4567/ButtonSearch.png"/> </a> </br>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<a href="{{id}}/delete"> <img src="http://localhost:4567/ButtonDelete.png"/> </a>
+			</td>
+		</tr>
  	</table>
-	<a href="http://localhost:4567/ListUser"> <h3 style="color:#DF3A01">Volver </h3> </a>
 	{{/user}}
 	</body>
 

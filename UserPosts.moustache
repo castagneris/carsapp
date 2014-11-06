@@ -16,19 +16,15 @@
 	{{#UserPosts}}	
 			<tr>
         			<td> 	
-					<a href="posts/{{id}}" style="color:#DF3A01"> {{getTitle}} </a>
+					<a href="posts/{{getId}}" style="color:#DF3A01"> {{getTitle}} </a>
 				</td>
 				<td> 
-					<a href="posts/{{id}}/questions" style="color:#DF3A01"> Ver pregunatas del post </a>
-				</td>
-				<td> 
-					<a href="posts/{{id}}/question" style="color:#DF3A01"> Realizar una pregunta</a>	
+					<a href="posts/{{id}}/questions" style="color:#DF3A01"> Ver preguntas del post </a>
 				</td>
 			</tr>					
 	{{/UserPosts}}
 	</table>
 	 
-	<a href="http://localhost:4567/ListUser" style="color:#DF3A01"> <h3>Volver </h3> </a>
 	
 	</body>
 
