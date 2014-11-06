@@ -35,7 +35,7 @@ public class Post extends Model {
                 node.close();
         }
           
-        public String id() {
+        public String getId() {
             return this.getString("id");
 	}
 	  
@@ -61,5 +61,8 @@ public class Post extends Model {
           public Integer getVehicle(){
               return (this.getInteger("vehicle_id"));
           }
+          public int getOwner (){
+              return (this.getInteger("user_id"));
+  }
 	  
 }
