@@ -14,7 +14,13 @@ CREATE TABLE carsapp_development.users(
 	CONSTRAINT users_pk PRIMARY KEY (id)
 );
 
-
+CREATE TABLE carsapp_development.points(
+	id INT(11) NOT NULL auto_increment ,
+	post_id INT(11),
+    user_id INT(11),
+    point INT NOT NULL,
+	CONSTRAINT point_pk PRIMARY KEY (id)
+);
 
 -- DROP TABLE IF EXISTS addresses; -- Ciudad
 CREATE TABLE carsapp_development.addresses (
