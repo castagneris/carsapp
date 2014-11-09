@@ -14,7 +14,11 @@ import org.javalite.activejdbc.Base;
 import spark.ModelAndView;
 import static spark.Spark.*;
 import spark.Session;
-import com.unrc.app.controllers.*;
+/**
+ * Hello world!
+ *
+ */
+
 
 public class App {
     public static final Node node = org.elasticsearch.node
@@ -36,13 +40,7 @@ public class App {
             Base.open("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/carsapp_development", "root", "root");
         });     
    
-                UserController userController = new UserController();
-                VehicleController vehicleController = new VehicleController();
-                PostController postController = new PostController();
-                LogController logController = new LogController();
-                QuestionController questionController = new QuestionController ();
-                AnswerController answerController = new AnswerController ();
-                
+      
 		get ("/app", (request, response) -> {
 			Map<String, Object> attributes = new HashMap<>();
 			return new ModelAndView(attributes, "Main.moustache");
@@ -52,47 +50,172 @@ public class App {
         );
 		
 		get ("/InsertVehicle", (request, response) -> {
-			return vehicleController.newVehicle(request, response);
+			Map<String, Object> attributes = new HashMap<>();
+			return new ModelAndView(attributes, "InsertVehicle.moustache");
 
 			 },
             new MustacheTemplateEngine()
         );
 	get("/app/:id/darAdmin", (request, response) -> {
-           return userController.addAdmin(request, response);
+            Session session = request.session(false);
+            String email = session.attribute("user_email");
+            User u2 = User.findFirst("user_email=?",email);
+            if (u2.getAdmin()){
+                User u = User.findById(request.params("id"));
+                u.set("admin",true);
+                u.save();
+                String retornar = "Has añadido un nuevo administrador ";
+                retornar = retornar + "<a href="+"http://localhost:4567/ListUser"+"><h3 style="+"color:#DF3A01"+"> Volver </h3></a>";
+                return retornar; 
+            }
+            else{
+                String retornar = "No eres administrador ";
+                retornar = retornar + "<a href="+"http://localhost:4567/ListUser"+"><h3 style="+"color:#DF3A01"+"> Volver </h3></a>";
+                return retornar; 
+            }
         });	
+
+
+		get ("/List", (request, response) -> {
+			Map<String, Object> attributes = new HashMap<>();
+			return new ModelAndView(attributes, "List.moustache");
+
+			 },
+            new MustacheTemplateEngine()
+        );
+
+
 
 //------------------------------------------Listar----------------------------  
    // Listar Usuario
     get("/ListUser", (request, response) -> {
-          return userController.listUser(request, response);
+          Map<String, Object> attributes = new HashMap<>();
+          //pasa a list todos los usuarios
+          List<User> users = User.findAll();
+          
+          boolean admin = false;
+          Session session = request.session(false);
+          if (session != null){   
+              String email = session.attribute("user_email");
+              User u = User.findFirst("email=?",email);
+              attributes.put("admin",u.getAdmin());
+          }
+          else{
+              attributes.put("admin",admin);
+          }
+          //carga tamaño de usuarios
+          attributes.put("users_count", users.size());
+          //carga list en map
+          attributes.put("users", users);
+         
+          
+          return new ModelAndView(attributes, "ListUsers.moustache");
       },
       new MustacheTemplateEngine()
   );
     
 
     get("/app/:id", (request, response) -> {
-        return userController.apptUser(request, response);
+        User user = User.findById(request.params("id"));
+        String email2 = user.getEmail();
+        Session session = request.session(false);
+        String email = session.attribute("user_email");
+        User u = User.findFirst("email=?",email);
+        Map<String,Object> attributes = new HashMap<String,Object>();
+        if ((session != null)) {
+                if ((u.getAdmin()) || (session.attribute("user_email").equals(email2))) {
+                   attributes.put("user",u); 
+                }
+                else{
+                    response.redirect("/Login");
+                }
+        }
+        else{
+            response.redirect("/app");
+        }
+        return new ModelAndView(attributes,"UserId.moustache");
     },
             
         new MustacheTemplateEngine()
     );
      
+         
        
     get("/app/:id/posts",(request,response)-> {
-        return postController.userPost(request, response);
+        User u = User.findById(request.params("id"));
+        String email = u.getEmail();
+        Session session = request.session(false);
+        Map<String, Object> attributes = new HashMap<>();
+        if ((session != null)) {
+            if ((session.attribute("user_email").equals(email)) || (u.getAdmin())) {
+                List <Post> posts = Post.where("user_id = ?", request.params("id"));
+                attributes.put("UserPosts",posts);
+                attributes.put("userId",u.id()); 
+            }
+            else{
+                response.redirect("/app");
+            }
+        }
+        else{
+            response.redirect("/app");
+        }
+        return new ModelAndView(attributes, "UserPosts.moustache");
         } ,
        new MustacheTemplateEngine()
     );
             
             
     get("posts/:pId", (request, response) -> {
-       return postController.idPost(request, response); 
+        Post p = Post.findById(request.params("pId"));
+        User u = User.findById(p.getOwner());
+        Vehicle v = Vehicle.findById(p.getVehicle());
+        List<Car> listC = Car.where("vehicle_id = ?", v.getId());
+        List<Truck> listT = Truck.where("vehicle_id = ?", v.getId());
+        List<Motorcycle> listM = Motorcycle.where("vehicle_id = ?", v.getId());   
+        
+        Map<String,Object> attributes = new HashMap<String,Object>();
+        
+        attributes.put("userFirstName",u.getFirstName());
+        attributes.put("userLastName",u.getLastName());
+        attributes.put("price",p.getPrice());
+        attributes.put("title",p.getTitle());
+	attributes.put("description",p.getDescription());
+        attributes.put("model",v.getModel());
+        attributes.put("patent",v.getPatent());
+        attributes.put("idp",p.getId());
+        if (!(listM.isEmpty())){
+            attributes.put("type_motor",listM.get(0).getTypeMotor()); 
+        } 
+        if (!(listC.isEmpty())) {
+            attributes.put("version",listC.get(0).getVersion());
+        } 
+     
+        if (!(listT.isEmpty())){
+            attributes.put("brake_system",listT.get(0).getbrakeSystem());
+        } 
+        return new ModelAndView(attributes,"PostId.moustache");
         },
         new MustacheTemplateEngine()
     );
    
     get("app/:id/vehicles/:vId", (request, response) -> {
-        return vehicleController.idVehicle(request, response);
+        Vehicle v = Vehicle.findById(request.params("vId"));
+        User u = User.findById(request.params("id"));           
+        
+         Map<String,Object> attributes = new HashMap<String,Object>();
+        attributes.put("userFirstName",u.getFirstName());
+        attributes.put("userLastName",u.getLastName());
+        attributes.put("id", u.id());        
+        attributes.put("model",v.getModel());
+        attributes.put("patent",v.getPatent());
+	attributes.put("mark",v.getMark());
+	attributes.put("color",v.getColor());
+	attributes.put("km",v.getKm());
+        
+
+          
+           
+        return new ModelAndView(attributes,"VehicleId.moustache");
         },
         new MustacheTemplateEngine()
             );
@@ -101,8 +224,19 @@ public class App {
 
 // Listar Post
         get("/ListPost", (request, response) -> {
-       return postController.listPost(request, response); 
+          Session session = request.session(false);
+          boolean log = false; 
+          if (session != null){  
+              log = true;
+          }
+          Map<String, Object> attributes = new HashMap<>();
+          List<Post> post = Post.findAll();
           
+          attributes.put("post_count", post.size());
+          attributes.put("post", post);
+          attributes.put("log", log);
+          
+          return new ModelAndView(attributes, "ListPost.moustache");
       },
       new MustacheTemplateEngine()
   );
@@ -110,43 +244,138 @@ public class App {
 
                 
    get("/app/:id/posts/:idp", (request, response) -> {
-       return postController.idPosts(request, response); 
+        Post p = Post.findById(request.params("idp"));
+        List<Point> points = Point.where("post_id=?",request.params("idp"));
+        int cant = 0;
+        int count = 0;
+        for (Point p2 : points){
+            cant = cant  + p2.getPoint();
+            count ++;
+        }
+        if (count ==0) {
+            count =1; }
+        Vehicle v = Vehicle.findById(p.getVehicle());
+        User u = User.findById(v.getOwner());
+        
+        List<Car> listC = Car.where("vehicle_id = ?", v.getId());
        
+        List<Truck> listT = Truck.where("vehicle_id = ?", v.getId());
+        List<Motorcycle> listM = Motorcycle.where("vehicle_id = ?", v.getId());   
+        Map<String,Object> attributes = new HashMap<String,Object>();
+        double mean = cant / count;
+        attributes.put("mean",mean);
+        attributes.put("id", u.id());
+        attributes.put("userFirstName",u.getFirstName());
+        attributes.put("userLastName",u.getLastName());
+        attributes.put("price",p.getPrice());
+        attributes.put("title",p.getTitle());
+        attributes.put("model",v.getModel());
+        attributes.put("patent",v.getPatent());
+	attributes.put("mark",v.getMark());
+	attributes.put("color",v.getColor());
+	attributes.put("km",v.getKm());  
+       
+       
+        
+        if (!(listM.isEmpty())){
+            attributes.put("type_motor",listM.get(0).getTypeMotor()); 
+        } 
+        if (!(listC.isEmpty())) {
+            attributes.put("version",listC.get(0).getVersion());
+    
+        } 
+     
+        if (!(listT.isEmpty())){
+            attributes.put("brake_system",listT.get(0).getbrakeSystem());
+        } 
+            
+           
+        return new ModelAndView(attributes,"PostId.moustache");
         },
         new MustacheTemplateEngine()
             
    );
  
   get("app/:id/posts/:idp/questions", (request, response) -> {
-        return questionController.questionPost(request, response);
+        List <Question> questions = Question.where("post_id = ?", request.params("idp"));
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("QuestionPosts",questions);
+        
+        
+        return new ModelAndView(attributes, "QuestionPosts.moustache");
         } ,
        new MustacheTemplateEngine()
    );
 
   
    get("app/:id/posts/:idP/questions/:idQ/answerInd", (request, response) -> {
-       return answerController.answerQuestion(request, response);       
+       
+        Question q = Question.findById(request.params("idQ")); 
+        Answer a = new Answer();
+        a = Answer.findFirst("question_id=?",q.getId());
+        
+        
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("getText",a.getText());
+        
+        
+        return new ModelAndView(attributes, "AnswerQuestions.moustache");
         } ,
        new MustacheTemplateEngine()
    );
  
   
    get("app/:id/delete", (request, response) -> {
-            return userController.deleteUser(request, response);
+            Session session = request.session(false);
+            User u = User.findById(request.params("id"));
+            String idSession = session.attribute("id");
+            User u2 = User.findById(request.params("idSession"));
+            if (u.id().compareTo(u2.id()) == 0 || u2.getAdmin()){
+                u.deleteCascade();
+                String retornar = "Has sido eliminado";
+                return retornar +"<a href="+"http://localhost:4567/app"+"><h3 style="+"color:#0000FF"+"> Volver </h3></a>";
+            }else{
+                String retornar = "Error no tienes permisos para esta operacion";
+                return retornar +"<a href="+"http://localhost:4567/app"+"><h3 style="+"color:#0000FF"+"> Volver </h3></a>";
+            }
 
             
     });
- 
+  
+   
+   
     //listar Vehiculos
 	get("/ListVehicles", (request, response) -> {
-            return vehicleController.listVehicle(request, response);
+            
+          Map<String, Object> attributes = new HashMap<>();
+          List<Vehicle> vehicles = Vehicle.findAll();
+          Session session = request.session(false);
+            if (session!=null) {
+                String email = session.attribute("user_email");
+                User u = User.findFirst("email=?",email);
+                attributes.put("admin",u.getAdmin());
+                attributes.put("notGuest",true);
+          }
+          attributes.put("vehiRegiscles_count", vehicles.size());
+          attributes.put("vehicles", vehicles);
+          return new ModelAndView(attributes, "ListVehicles.moustache");
       },
       new MustacheTemplateEngine()
   );
         
      // todos los vehiculos del usario   
     get("/app/:id/vehicles", (request, response) -> {
-        return vehicleController.userVehicle(request, response);
+        User u = User.findById(request.params("id"));
+        List<Vehicle> v = Vehicle.where("user_id=?", u.id());
+ 
+        Map<String,Object> attributes = new HashMap<String,Object>();
+        attributes.put("id", u.id());
+        attributes.put("userFirstName",u.getFirstName());
+        attributes.put("userLastName",u.getLastName());
+        attributes.put("vehicles", v); 
+            
+           
+        return new ModelAndView(attributes,"UserVehicles.moustache");
         },
         new MustacheTemplateEngine()
             );
@@ -157,89 +386,300 @@ public class App {
             v.deleteCascade();
             return "<a href="+"http://localhost:4567/app"+"><h3 style="+"color:#0000FF"+"> Volver </h3></a>";
     });
- 
+        
+  
+    
   //--------------------------------------Insert---------------------------------- 
      
-          get ("/RegisterUser", (request, response) -> {                          
-              return userController.newUser();
+          get ("/RegisterUser", (req, res) -> {                          
+          Map<String, Object> attributes = new HashMap<>();
+          
+          return new ModelAndView(attributes, "RegisterUser.moustache");
       },
       new MustacheTemplateEngine()
   );
-         post("/User", (request, response) -> {
-           return userController.addUser(request, response);
+        post("/User", (request, response) -> {
+            String retornar;
+			retornar=" <body>";
+            User user = new User();
+            //Cargar variable user con datos tomados por pantalla
+            user.set("first_name", request.queryParams("first_name"));
+            user.set("last_name", request.queryParams("last_name"));
+            user.set("email",request.queryParams("email"));
+            user.set("pass",request.queryParams("pass"));
+            user.set("admin",false);
+            
+            Address city = new Address();
+            //Carga variable city con datos tomados por pantalla
+            city.set("country", request.queryParams("country"));
+            city.set("state",request.queryParams("state"));
+            city.set("name",request.queryParams("name"));
+            city.saveIt();
+
+            user.saveIt();
+            city.add(user);
+			retornar = retornar + "Usuario Cargado Correctamente";
+			retornar = retornar + "<a href="+"http://localhost:4567/app"+"><h3 style="+"color:#DF3A01"+"> Volver </h3></a>";
+            return retornar;
             
          });
         
         get("/Guest", (request, response) -> {
-         return userController.guestUser();
+         
+          return new ModelAndView(null, "Guest.moustache");
       },
       new MustacheTemplateEngine()
   );
           
    get("/Login", (request, response) -> {
-          return logController.login();
+         // Map<String, Object> attributes = new HashMap<>();
+          Session session = request.session(false);
+          return new ModelAndView(null, "Login.moustache");
       },
       new MustacheTemplateEngine()
   );
  
    
   
-    post("/CheckLogin", (request, response) -> {
-            return logController.checkLogin(request, response);
+         post("/CheckLogin", (request, response) -> {
+            String retornar;
+			retornar=" <body>";           
+	    User u = User.findFirst("email=?",request.queryParams("email"));         
+	    String pass =request.queryParams("pass");
+            
+            if (u !=null ){
+	    if (u.getPass().compareTo(pass) == 0) {
+                Session session = request.session(true);
+                session.attribute("user_email", u.getEmail());
+                session.attribute("user_id", u.id());
+                if (u.getAdmin()) {
+                      response.redirect("/app/"+u.id());
+                }
+                else {
+                    response.redirect("/app/"+u.getId());
+                }
+            }
+            else{
+                response.redirect("/Login");
+            }
+            
+            }
+            else {
+                retornar = retornar + "Usuario no existente";
+                retornar = retornar +"<a href="+"http://localhost:4567/Login"+"><h3 style="+"color:#DF3A01"+"> Volver </h3></a>";
+            }         
+	         
+	 return retornar;
         });
          
       get("/Logout", (request, response) -> {
-            return logController.logout(request, response);
-
+            Session session = request.session(false);
+            if (session!=null) {
+                session.invalidate();
+            }
+            response.redirect("/app");
+            return null;
         });
          
         get ("/app/:id/newCar", (request, response) -> {         
-          return vehicleController.newCar(request, response);
+          Map<String, Object> attributes = new HashMap<>();
+          User u = User.findById(request.params("id"));
+          
+          attributes.put("u",u.id());
+          return new ModelAndView(attributes, "NewCar.moustache");
       },
       new MustacheTemplateEngine()
   );        
-     
+        
+        
+        
         post("/app/:id/car", (request, response) -> {
-            return vehicleController.addCar(request, response);
+            String retornar;
+            retornar=" <body>";
+            User user = new User();
+            //Cargar variable user con datos tomados por pantalla
+            User user2 = new User();
+            user.set("id",request.params("id"));
+            
+            user2 = User.findFirst("id=?",user.get("id"));
+            //controlar existencia de usuario en base de datos
+
+            Vehicle vehicle = new Vehicle();
+            //carga variable vehicle con datos tomados por pantalla
+            vehicle.set("model",request.queryParams("model"));
+            vehicle.set("patent",request.queryParams("patent"));
+            vehicle.set("color",request.queryParams("color"));
+            vehicle.set("km",request.queryParams("km"));
+            vehicle.set("mark",request.queryParams("mark"));
+            vehicle.set("year",request.queryParams("year"));
+            vehicle.saveIt();
+            user2.add(vehicle); 
+
+
+            Car car = new Car();
+            //carga variable car con datos tomados por pantalla
+            car.set("doors",request.queryParams("doors"));
+            car.set("version",request.queryParams("version"));
+            car.set("transmission",request.queryParams("transmission"));
+            car.set("direction",request.queryParams("direction"));
+
+            car.saveIt();
+            vehicle.add(car);
+            retornar =retornar +"Carga Exitosa";
+           
+            retornar = retornar + "<a href="+"http://localhost:4567/app/"+user2.id()+"><h3 style="+"color:#DF3A01"+"> Volver </h3></a>";
+            return retornar;
          });   
         
         get ("/app/:id/newMotorcycle", (request, response) -> {         
-          return vehicleController.newMotorcycle(request, response);
+          Map<String, Object> attributes = new HashMap<>();
+          User u = User.findById(request.params("id"));
+          
+          attributes.put("u",u.id());
+          return new ModelAndView(attributes, "NewMotorcycle.moustache");
       },
       new MustacheTemplateEngine()
   );                  
         
         post("/app/:id/motorcycle", (request, response) -> {
-            return vehicleController.addMotorcycle(request, response);
+            String retornar;
+            retornar=" <body>";
+            User user = new User();
+            //Cargar variable user con datos tomados por pantalla
+            User user2 = new User();
+            user.set("id",request.params("id"));
+            
+            user2 = User.findFirst("id=?",user.get("id"));
+            
+            Vehicle vehicle = new Vehicle();
+            //carga variable vehicle con datos tomados por pantalla
+            vehicle.set("model",request.queryParams("model"));
+            vehicle.set("patent",request.queryParams("patent"));
+            vehicle.set("color",request.queryParams("color"));
+            vehicle.set("km",request.queryParams("km"));
+            vehicle.set("mark",request.queryParams("mark"));
+            vehicle.set("year",request.queryParams("year"));
+            vehicle.saveIt();
+            user2.add(vehicle);    
+
+            Motorcycle moto = new Motorcycle();
+            //carga variable moto con datos tomados por pantalla
+            moto.set("type",request.queryParams("type"));
+            moto.set("type_motor",request.queryParams("type_motor"));
+            moto.set("boot_system",request.queryParams("boot_system"));
+            moto.set("displacement",request.queryParams("displacement"));
+
+            moto.saveIt();
+            vehicle.add(moto);
+
+            retornar =retornar +"Carga Exitosa";
+        retornar = retornar + "<a href="+"http://localhost:4567/app/"+user2.id()+"><h3 style="+"color:#DF3A01"+"> Volver </h3></a>";
+        return retornar;
      });   
         
          
         get ("/app/:id/newTruck", (request, response) -> {         
-          return vehicleController.newTruck(request, response);
+          Map<String, Object> attributes = new HashMap<>();
+          User u = User.findById(request.params("id"));
+          
+          attributes.put("u",u.id());
+          return new ModelAndView(attributes, "NewTruck.moustache");
       },
       new MustacheTemplateEngine()
   ); 
         
         
         post("/app/:id/truck" , (request, response) -> {
-            return vehicleController.addTruck(request, response);
+            String retornar;
+            retornar=" <body>";
+            User user = new User();
+            //Cargar variable user con datos tomados por pantalla
+            User user2 = new User();
+            user.set("id",request.params("id"));
+            
+            user2 = User.findFirst("id=?",user.get("id"));
+            Vehicle vehicle = new Vehicle();
+            //carga variable vehicle con datos tomados por pantalla
+            vehicle.set("model",request.queryParams("model"));
+            vehicle.set("patent",request.queryParams("patent"));
+            vehicle.set("color",request.queryParams("color"));
+            vehicle.set("km",request.queryParams("km"));
+            vehicle.set("mark",request.queryParams("mark"));
+            vehicle.set("year",request.queryParams("year"));
+            vehicle.saveIt();
+            user2.add(vehicle);    
+
+            Truck camion = new Truck();
+            //carga variable camion con datos tomados por pantalla
+            camion.set("brake_system",request.queryParams("brake_system"));
+            camion.set("direction",request.queryParams("direction"));
+            camion.set("capacity",request.queryParams("capacity"));                    
+            camion.saveIt();
+            vehicle.add(camion);
+
+
+            retornar =retornar +"Carga Exitosa";
+            retornar = retornar + "<a href="+"http://localhost:4567/app/"+user2.id()+"><h3 style="+"color:#DF3A01"+"> Volver </h3></a>";
+            return retornar;
          });   
 
     
         get("/app/:id/newPost" , (request, response)-> {
-          return postController.newPost(request, response);
+          User u = User.findById(request.params("id"));
+          String email = u.getEmail();
+          Session session = request.session(false);
+          String emailSession = session.attribute("user_email");
+          String idSession = session.attribute("id");
+          User userSession = User.findById(idSession);
+          Map<String, Object> attributes = new HashMap<>();
+          if((email.compareTo(emailSession) == 0) || userSession.getAdmin() ){
+
+              attributes.put("u",u.id());
+          }else{
+              response.redirect("/Login");
+          }
+          
+          return new ModelAndView(attributes, "NewPost.moustache");
       },
       new MustacheTemplateEngine()
   ); 
       
         post("/app/:id/post", (request, response) -> {
-          return postController.addPost(request, response);
+            String retornar = "";
+            User u = User.findById(request.params("id"));
+            List<Vehicle> v = Vehicle.where("user_id = ?", request.params("id"));
+            String patente = request.queryParams("patent");
+            boolean checkpatent = false;
+            for (Vehicle v2 : v){
+                if ((v2.getPatent().compareTo(patente)) == 0){
+                    checkpatent = true;
+                }
+            }
+            if (checkpatent){
+            Vehicle vehicle = Vehicle.findFirst("patent =?", patente);    
             
+            
+            Post post = new Post();
+            post.set("title",request.queryParams("title"));
+            post.set("description",request.queryParams("description"));
+            post.set("price",request.queryParams("price"));
+            post.saveIt();
+            u.add(post);
+            vehicle.add(post);
+            retornar = retornar +"Se ha creado el post exitosamente";
+            retornar = retornar + "<a href="+"http://localhost:4567/app/"+request.params("id")+"><h3 style="+"color:#DF3A01"+"> Volver </h3></a>";
+            return retornar;
+            }
+            else {
+            retornar =retornar +"No se ha creado el post, patente inexistente";
+            retornar = retornar + "<a href="+"http://localhost:4567/app/"+request.params("id")+"><h3 style="+"color:#DF3A01"+"> Volver </h3></a>";    
+            return retornar;
+            }
          });
         
         
          get("/:idp/newQuestion", (request, response) -> {        
-           Map<String, Object> attributes = new HashMap<>();
+          Map<String, Object> attributes = new HashMap<>();
           
           attributes.put("idp",request.params("idp"));
           return new ModelAndView(attributes, "newQuestion.moustache");
@@ -248,8 +688,27 @@ public class App {
   ); 
          
         post("/:idp/question", (request, response) -> {
-            return questionController.addQuestion(request, response);
-           
+            String retornar;
+            retornar=" <body>";
+            Session session = request.session(false);
+            String email = session.attribute("user_email");
+            User u = User.findFirst("email=?",email);
+            Post p = Post.findById(request.params("idp"));
+            //Cargar variable user con datos tomados por pantalla
+       
+            //controlar existencia de usuario y de post en base de datos
+                Question question = new Question();
+                question.set("textQ",request.queryParams("textQ"));
+                question.saveIt();
+                
+                u.add(question);
+                p.add(question);
+
+                retornar =retornar +"Carga Exitosa";
+                    
+		retornar = retornar + "<a href="+"http://localhost:4567/ListPost"+"><h3 style="+"\"color:#DF3A01\""+"> Volver </h3></a>";
+            
+                return retornar; 
          });
                  
                                                                                     
@@ -263,8 +722,18 @@ public class App {
   ); 
         
         post("questions/:idQ/answer", (request, response) -> {
-            return answerController.addAnswer(request, response);
-           
+            String retornar= "";
+            Question q = Question.findById(request.params("idQ"));
+            Session session = request.session(false);
+            String email = session.attribute("user_email");
+            User u = User.findFirst("email=?",email);
+            Answer answer = new Answer();
+            answer.set("textA",request.queryParams("textA"));
+            answer.saveIt();
+            q.add(answer);
+            u.add(answer);
+            retornar =retornar +"Ha respondido pregunta exitosamente";
+            return retornar; 
          });
         
     /*----------------------------------------------BUSQUEDAS----------------------------------------------------*/    
@@ -318,30 +787,7 @@ public class App {
             new MustacheTemplateEngine()
        
      );
-        
-      get("posts/:idp/punctuate", (request, response) -> {
-                     Map<String,Object> attribute = new HashMap<String,Object>();
-                     attribute.put("idp",request.params("idp"));
-       return new ModelAndView(attribute,"Point.moustache");
-   },
-    new MustacheTemplateEngine()
-   );     
-   
-   post("posts/:idp/checkPunctuate", (request, respone) ->{
-       
-       Post p = Post.findById(request.params("idp"));
-       Session session = request.session(false);
-       String email = session.attribute("user_email");
-       User u = User.findFirst("email =?", email);
-       String retornar = "";
-       Point point = new Point();
-       point.set("point",request.queryParams("points"));
-       u.add(point);
-       p.add(point);
-       point.saveIt();
-       retornar = "Has puntuado correctamente";
-       return retornar;
-      } );
+
         
      get("/cerrar", (request, response) -> {
             node.close();
